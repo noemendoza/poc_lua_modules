@@ -1,22 +1,46 @@
-local _M = {}
+local M		= {}
+local http	= require "resty.http"
+local cjson	= require "cjson"
 
-local https = require("ssl.https")
-local json = require("dkjson")
-
-function _M.verify(secret, response, remoteip)
-	local post_data =
-		"secret=" .. uhttpd.urlencode(secret) ..
-		"&response=" .. uhttpd.urlencode(response) ..
-		(remotip and "&remoteip=" .. uhttpd.urlencode(remoteip) or "")
-	local body, code, headers, status = https.request("https://www.google.com/recaptcha/api/siteverify", post_data)
-	if (code ~= 200) then return nil, code end
-	local body_json, position, error = json.decode(body)
-	if not body_json then return nil, error, position end
-	if body_json.success then
-		return true, body_json
-	else
-		return false, body_json['error-codes']
-	end
+function M.get_code (antibot_uri, recaptcha_sitekey)
+	return string.format([[
+		<html>
+			<head>
+				<script src="https://www.google.com/recaptcha/api.js?render=%s"></script>
+			</head>
+			<body>
+				<form method="POST" action="%s" id="form">
+					<input type="hidden" name="token" id="token">
+				</form>
+				<script>
+					grecaptcha.ready(function() {
+						grecaptcha.execute('%s', {action: 'recaptcha'}).then(function(token) {
+							document.getElementById("token").value = token;
+							document.getElementById("form").submit();
+						});;
+					});
+				</script>
+			</body>
+		</html>
+	]], recaptcha_sitekey, antibot_uri, recaptcha_sitekey)
 end
 
-return _M
+function M.check (token, recaptcha_secret)
+	local httpc = http.new()
+	local res, err = httpc:request_uri("https://www.google.com/recaptcha/api/siteverify", {
+		ssl_verify = false,
+		method = "POST",
+		body = "secret=" .. recaptcha_secret .. "&response=" .. token .. "&remoteip=" .. ngx.var.remote_addr,
+		headers = { ["Content-Type"] = "application/x-www-form-urlencoded" }
+	})
+	if not res then
+		return 0.0
+	end
+	local data = cjson.decode(res.body)
+	if not data.success then
+		return 0.0
+	end
+	return data.score
+end
+
+return M
