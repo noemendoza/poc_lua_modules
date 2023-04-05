@@ -14,7 +14,7 @@ function _M.rewrite()
   else
     ngx_log(ngx.NOTICE, string_format("User Agent did not match any provided conditions error noe"))
     ngx.req.set_header("x-hello-world", "unknwon")
-    ngx.say('not found')
+    -- ngx.say('not found')
     ngx.exit(ngx.HTTP_NOT_FOUND)
   end
 end
