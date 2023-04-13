@@ -54,8 +54,9 @@
 
 -- This library provides per-worker counters used to store counter metric
 -- increments. Copied from https://github.com/Kong/lua-resty-counter
-local resty_counter_lib = require("plugins/prometheus_resty_counter")
-local key_index_lib = require("plugins/prometheus_keys")
+
+local resty_counter_lib = require("plugins/prometheus_resty_counter/main")
+local key_index_lib = require("plugins/prometheus_keys/main")
 local ngx = ngx
 local ngx_re_match = ngx.re.match
 local ngx_re_gsub = ngx.re.gsub
