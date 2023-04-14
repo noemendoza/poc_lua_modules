@@ -11,5 +11,5 @@ function _M.rewrite()
 end
 
 function _M.log()
-    ngx.log(ngx.NOTICE, "LOG  ------------------------")") 
+    ngx.log(ngx.NOTICE, "LOG  ------------------------")
 end
