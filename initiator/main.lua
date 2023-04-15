@@ -7,7 +7,7 @@ local _M = {}
 -- end
 
 
-local prometheus = require("plugins/prometheus/main").new()
+local prometheus = require("plugins/prometheus/main")
 
 function _M:init_worker()
     ngx.log(ngx.NOTICE, "init_worker =====================")
