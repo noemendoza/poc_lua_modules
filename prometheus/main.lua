@@ -769,12 +769,12 @@ function Prometheus:init_worker(sync_interval)
     error('Prometheus:init_worker can only be called in ' ..
       'init_worker_by_lua_block', 2)
   end
-  if self._counter then
-    ngx.log(ngx.WARN, 'init_worker() has been called twice. ' ..
-      'Please do not explicitly call init_worker. ' ..
-      'Instead, call Prometheus:init() in the init_worker_by_lua_block')
-    return
-  end
+--   if self._counter then
+--     ngx.log(ngx.WARN, 'init_worker() has been called twice. ' ..
+--       'Please do not explicitly call init_worker. ' ..
+--       'Instead, call Prometheus:init() in the init_worker_by_lua_block')
+--     return
+--   end
   self.sync_interval = sync_interval or DEFAULT_SYNC_INTERVAL
   local counter_instance, err = resty_counter_lib.new(
       self.dict_name, self.sync_interval, self.error_metric_name)
