@@ -35,15 +35,16 @@ function _M:log()
     metric_bytes:inc(tonumber(ngx.var.request_length), {domain})
 
     -- Contar el número de solicitudes procesadas durante este segundo
-    local current_second = math.floor(ngx.now())
-    if current_second == last_second then
-        requests_this_second = requests_this_second + 1
-    else
-        -- Actualizar la métrica con el número de solicitudes procesadas durante el segundo anterior
-        metric_requests_per_second:inc(requests_this_second, {domain})
-        requests_this_second = 1
-        last_second = current_second
+    requests_this_second = requests_this_second + 1
+
+    -- Actualizar la métrica con el número de solicitudes procesadas cada 100ms
+    local elapsed = ngx.now() - last_update
+    if elapsed >= 0.1 then
+        metric_requests_per_second:inc(requests_this_second / elapsed, {domain})
+        requests_this_second = 0
+        last_update = ngx.now()
     end
+
 
 end
 
