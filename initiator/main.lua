@@ -26,6 +26,8 @@ function _M:init_worker()
         "Number of bytes sent and received", {"host", "direction"})
     metric_requests_per_second = prometheus:counter("requests_per_second",
         "Number of HTTP requests per second", {"host"})
+    metric_errors = prometheus:counter("nginx_metric_errors_total", "Number of HTTP errors", {"host", "error_type"})
+
 end
 
 function _M:log()
@@ -37,6 +39,9 @@ function _M:log()
     metric_bytes:inc(tonumber(ngx.var.bytes_sent), {domain, "sent"})
     metric_bytes:inc(tonumber(ngx.var.bytes_received), {domain, "received"})
     metric_requests_per_second:inc(1, {domain})
+    if ngx.var.status >= 400 then
+        metric_errors:inc(1, {domain, ngx.var.status})
+    end
 end
 
 return _M
