@@ -36,5 +36,3 @@ function _M:log()
 end
 
 return _M
-
-de ese bloqeu de codigo tengo metricas de metric_requests y metric_latency, pero no tengo de metric_response_sizes y metric_bytes que mas me falta s un scripot de lua nginx
