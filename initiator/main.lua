@@ -1,12 +1,6 @@
+
 local ngx = ngx
-
 local _M = {}
-
--- function _M.rewrite()
---   ngx.log(ngx.NOTICE, "rewrite =====================")
--- end
-local last_second = math.floor(ngx.now())
-local requests_this_second = 0
 
 
 function _M:init_worker()
@@ -22,19 +16,6 @@ function _M:init_worker()
     metric_active_connections = prometheus:gauge("active_connections", "Number of active HTTP connections", {"host"})
     metric_open_connections = prometheus:counter("open_connections_total", "Total number of HTTP connections opened", {"host"})
     metric_closed_connections = prometheus:counter("closed_connections_total", "Total number of HTTP connections closed", {"host"})
-    -- Inicializar el temporizador
-    local ok, err = ngx.timer.every(1, function()
-        local now = math.floor(ngx.now())
-        if now > last_second then
-          metric_requests_per_second:set(requests_this_second, {domain})
-          requests_this_second = 0
-          last_second = now
-        end
-      end)
-      if not ok then
-        ngx.log(ngx.ERR, "Failed to create timer: ", err)
-        return
-      end
 
 end
 
@@ -45,7 +26,7 @@ function _M:log()
     metric_latency:observe(tonumber(ngx.var.request_time), {domain})
     metric_response_sizes:observe(tonumber(ngx.var.bytes_sent), {domain})
     metric_bytes:inc(tonumber(ngx.var.request_length), {domain})
-    requests_this_second = requests_this_second + 1
+    metric_requests_per_second:inc(1, {domain})
 
 end
 
