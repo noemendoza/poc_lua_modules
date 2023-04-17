@@ -1,3 +1,4 @@
+
 local ngx = ngx
 
 local _M = {}
@@ -20,13 +21,16 @@ function _M:init_worker()
         "Number of bytes sent and received", {"host", "direction"})
     metric_requests_per_second = prometheus:counter("requests_per_second",
         "Number of HTTP requests per second", {"host"})
-
+    metric_requests_by_ip = prometheus:counter("requests_total_by_ip",
+        "Number of HTTP requests by IP address", {"host", "status", "ip"})
 end
 
 function _M:log()
     local host = ngx.var.http_host or "unknown"
     local domain = string.match(host, "^([^%.]+)%.") or "unknown"
+    local ip = ngx.var.remote_addr
     metric_requests:inc(1, {domain, ngx.var.status})
+    metric_requests_by_ip:inc(1, {domain, ngx.var.status, ip})
     metric_latency:observe(tonumber(ngx.var.request_time), {domain})
     metric_response_sizes:observe(tonumber(ngx.var.bytes_sent), {domain})
     metric_bytes:inc(tonumber(ngx.var.bytes_sent), {domain, "sent"})
