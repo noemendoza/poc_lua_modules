@@ -2,12 +2,6 @@ local ngx = ngx
 
 local _M = {}
 
--- function _M.rewrite()
---   ngx.log(ngx.NOTICE, "rewrite =====================")
--- end
-
-
-
 function _M:init_worker()
     ngx.log(ngx.NOTICE, "init_worker =====================")
     prometheus = require("plugins/prometheus/main").init("prometheus_metrics",{sync_interval=0.4})
@@ -40,7 +34,7 @@ function _M:log()
     metric_bytes:inc(tonumber(ngx.var.bytes_received), {domain, "received"})
     metric_requests_per_second:inc(1, {domain})
     local req_per_sec = 1 / tonumber(ngx.var.request_time)
-    if ngx.var.status >= 400 then
+    if tonumber(ngx.var.status) >= 400 then
         metric_errors:inc(1, {domain, ngx.var.status})
     end
 end
