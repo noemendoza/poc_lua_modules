@@ -39,6 +39,9 @@ function _M:log()
     metric_bytes:inc(tonumber(ngx.var.bytes_sent), {domain, "sent"})
     metric_bytes:inc(tonumber(ngx.var.bytes_received), {domain, "received"})
     metric_requests_per_second:inc(1, {domain})
+    local req_per_sec = 1 / tonumber(ngx.var.request_time)
+    metric_requests:inc(req_per_sec, {domain, ngx.var.status})
+
     if ngx.var.status >= 400 then
         metric_errors:inc(1, {domain, ngx.var.status})
     end
