@@ -22,7 +22,7 @@ function _M:init_worker()
     metric_active_connections = prometheus:gauge("active_connections", "Number of active HTTP connections", {"host"})
     metric_open_connections = prometheus:counter("open_connections_total", "Total number of HTTP connections opened", {"host"})
     metric_closed_connections = prometheus:counter("closed_connections_total", "Total number of HTTP connections closed", {"host"})
-    -- Inicializar el temporizador
+
 
 
 end
@@ -32,9 +32,18 @@ function _M:log()
     local domain = string.match(host, "^([^%.]+)%.") or "unknown"
     metric_requests:inc(1, {domain, ngx.var.status})
     metric_latency:observe(tonumber(ngx.var.request_time), {domain})
-    metric_response_sizes:observe(tonumber(ngx.var.bytes_sent), {domain})
     metric_bytes:inc(tonumber(ngx.var.request_length), {domain})
-    metric_requests_per_second:inc(1, {domain})
+
+    -- Contar el número de solicitudes procesadas durante este segundo
+    local current_second = math.floor(ngx.now())
+    if current_second == last_second then
+        requests_this_second = requests_this_second + 1
+    else
+        -- Actualizar la métrica con el número de solicitudes procesadas durante el segundo anterior
+        metric_requests_per_second:inc(requests_this_second, {domain})
+        requests_this_second = 1
+        last_second = current_second
+    end
 
 end
 
